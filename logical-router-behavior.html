@@ -1,0 +1,162 @@
+<script>
+/*
+	Logical Router Behavior
+	Created by: Kevin Ashcraft (kevin@kevashcraft.com)
+	Created on: 2015-12-22
+	Description: handles site routing using history api (pushing/popping)
+	Last Edited: 2015-12-22
+
+
+	Notes:
+		The name of the loaded element is determined by parsing the address in the url par into a location array then looking up the element name in the pages object (located in the app-main.html file).
+*/
+/*
+router based on the history api
+
+	notes:
+		-pages are defined in the pages object in the main object
+		-location refers to an array of page names, url is the string found in the address bar
+*/
+Polymer.LogicalRouterBehavior = {
+
+	// main entry point - loads first page
+	Router: function() {
+
+		// call page changing function without specific location so current url is used
+		this.setPage(false, 1);
+		// create the pop event listener
+		this.statelyListen();
+	},
+
+
+	// prepares page information object to pass to stately
+	setPage: function(location, replace) {
+
+		// check if already on requested location
+		if(location && LogicalApp.Page) {
+			// check ever level of location
+			if(location.every(function(level, i){ return level == LogicalApp.Page[i] })) {
+				// gtfo
+				return;
+			}
+		}
+
+		// determine method to go to new page, push adds to the history stack, replace changes the current history info
+		var action = replace ? 'replace' : 'push';
+
+		// clear header
+		this.header = '';
+
+		// get the name of the element for the page
+		var elementName = this._page(location);
+
+		// create the element
+		var element = LogicalApp.CurrentElement = document.createElement(elementName);
+
+		if(element.info && element.info.RequiresAuth) {
+			if(!LogicalApp.Site.isAuthed) {
+				elementName = this._page(LogicalApp.DefaultUnAuthedLocation);
+				element = LogicalApp.CurrentElement = document.createElement(elementName);
+			}
+		}
+
+		// join the location 
+		url = '/' + LogicalApp.location.join('/');
+
+		this.stately({
+			element: elementName,
+			title: element.info.title,
+			url: url,
+			location: LogicalApp.location,
+		}, action, element);
+
+	},
+	stately: function(o, action, elem) {
+
+		if(action == 'pop') {
+			LogicalApp.location = o.location;
+			var elem = LogicalApp.ce = document.createElement(o.element);
+		}
+
+		if(action == 'push')
+			window.history.pushState(o, o.title, o.url);
+		else if(action == 'replace')
+			window.history.replaceState(o, o.title, o.url);
+
+		document.title = o.title + " | " + LogicalApp.SiteTitle;
+		this.header = o.title;
+
+		var content = this.Site.isAuthed ? this.$.content : this.$.contentUnAuthed ? this.$.contentUnAuthed : this.$.content;
+		if(oc = content.children[0]) {
+			oc.animateOut();
+		}
+
+		content.appendChild(elem);
+		elem.animateIn();
+
+		// remove conpan children
+		var ConpanContainer = LogicalApp.$.ConpanContainer;
+		while(ConpanContainer.firstChild) {
+			ConpanContainer.removeChild(ConpanContainer.firstChild);
+		}
+
+		// if ConPan, add it
+		var Conpan = elem.$.Conpan;
+		if(typeof Conpan != 'undefined') {
+			ConpanContainer.appendChild(Conpan);
+			LogicalApp.set('isConpan', true);
+			LogicalApp.set('isConpanShowing', true);
+		} else {
+			LogicalApp.set('isConpan', false);
+		}
+
+
+
+	},
+	statelyListen: function() {
+		window.addEventListener('popstate', function(e){
+			this.stately(e.state, 'pop');
+		}.bind(this));
+	},
+
+	// returns the element name for the given location
+	_page: function(location) {
+
+		// pass the location
+		var location = this._location(location);
+
+		// Define first level page
+		var page = this.pages[location[0]] || '';
+
+		// Find the page 
+		for(var i = 1; i < location.length; i++) {
+			if(typeof page != 'string' && typeof page[location[i]] != 'undefined')
+				page = page[location[i]];
+			else
+				break;
+		}
+
+		// set the page if it's a string
+		if(typeof page != 'string') page = '';
+
+		// Default is home
+		if(page == '') page = LogicalApp.DefaultPage;
+
+		return page;
+	},
+
+	// sets the global location array and returns it
+	_location: function(location) {
+
+		// Grab the location - removes first (and last) slash, lowercase it, then convert to array
+		if(!location)
+			var location = window.location.pathname.substr(1).replace(/\/$/,'').toLowerCase().split('/');
+
+		// Set the stored location
+		LogicalApp.location = location;
+		LogicalApp.Page0 = location[0];
+
+		return location;
+	},
+}
+</script>

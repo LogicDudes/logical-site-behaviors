@@ -1,0 +1,89 @@
+<script>
+/*
+	Logical Site Behavior
+	Created by: Kevin Ashcraft (kevin@kevashcraft.com)
+	Created on: 2015-12-22
+	Description: defines and stores the Site object
+	Last Edited: 2015-12-22
+
+*/
+
+Polymer.LogicalSiteBehavior = {
+
+	properties: {
+
+		// holds the user information such as username, id, etc., and an isAuthed boolean to easily toggle hidden elements
+		Site: {
+			type: Object,
+			notify: true
+		},
+	},
+
+	observers: [
+		'SiteTokenChanged(Site.Token)',
+	],
+
+	ready: function() {
+	
+		this.StorageUnits = this.querySelectorAll('iron-localstorage');
+		this.StorageUnitsReady = 0;
+
+		// add event listener to localstorage units for lists
+		for( var i in this.StorageUnits) {
+			if(!this.StorageUnits.hasOwnProperty(i)) break;
+			this.StorageUnits[i].addEventListener('iron-localstorage-load', this.StorageUnitReady.bind(this));
+
+			if(this.StorageUnits[i].name == 'Site') {
+				this.StorageUnits[i].addEventListener('iron-localstorage-load-empty', this.SiteReset.bind(this));
+			} else {
+				this.StorageUnits[i].addEventListener('iron-localstorage-load-empty', this.StorageUnitReady.bind(this));
+			}
+		}
+	},
+	
+	// fired when unit is ready, when all ready fires SiteReady
+	StorageUnitReady: function() {
+		this.StorageUnitsReady++;
+		if(this.StorageUnitsReady == this.StorageUnits.length) {
+			this.SiteReady();
+		}
+	},
+	
+	SiteReady: function() {
+		this.isReady = true;
+		this.fire('site-ready');
+		this.Router();
+	},
+	
+	// resets the site object
+	SiteReset: function() {
+
+		this.Site = {
+			User: {
+				roles: ' ',
+			},
+			Token: '',
+			isAuthed: false,
+			Pool: {},
+		};
+
+		if(!this.isReady) {
+			this.StorageUnitReady();
+		} else {
+			// if reset occurred after site ready, then make sure page does not requre authentication
+			if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth && LogicalApp.DefaultUnAuthedLocation) {
+				LogicalApp.setPage([LogicalApp.DefaultUnAuthedLocation]);
+			}
+		}
+
+	},
+
+	SiteTokenChanged: function(n, o) {
+	
+		console.log("n", n);
+		console.log("o", o);
+
+	},
+	
+};
+</script>

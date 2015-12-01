@@ -1,0 +1,53 @@
+<script>
+/*
+handles ajax requests
+*/
+Polymer.LogicalJaxsonBehavior = {
+
+	jaxson: function(request, body, that) {
+
+		var body = body || {};
+
+		if(request != 'multi') {
+			body.request = request;
+			body = [body];
+		}
+
+		var that = that || this;
+
+		var jaxson = document.createElement('iron-request');
+		jaxson.completes.then(function(r){
+			var responses = r.response;
+
+			var response = responses.shift();
+			this.set('Site.Token', response.SiteToken);
+
+			for(var i in responses) {
+				var response = responses[i];
+				
+				if(response.toast) {
+					var duration = response.toastDuration || 2000;
+					var undo = false;
+					if(response.undoUrl) {
+						duration = response.toastDuration || 9000;
+						this.undoParams = response.undoParams;
+						this.undoUrl = response.undoUrl;
+						this.that = this;
+						undo = true;
+					}
+					this.toast(response.toast, duration, undo);
+				}
+				that._jaxson(response);
+			}
+
+		}.bind(this));
+		jaxson.send({
+			method: 'POST',
+			body: body,
+			handleAs: 'json',
+			url: '/Jaxson',
+			headers: { 'Content-Type': 'application/json', 'Site-Token': this.Site.Token },
+		});
+	},
+};
+</script>

@@ -1,0 +1,51 @@
+<script src="../event-source-polyfill/eventsource.min.js"></script>
+<script>
+/*
+	Logical SSE Behavior
+	Created by: Kevin Ashcraft (kevin@kevashcraft.com)
+	Created on: 2015-12-22
+	Description: established a server side event handler then passes incoming event to the app-main element as a page event
+	Last Edited: 2015-12-22
+*/
+
+Polymer.LogicalSSEBehavior = {
+
+
+	listeners: {
+		'site-ready': 'SSEConnect',
+		'SSEConnectionEstablished': 'onSSEConnectionEstablished',
+		'SSEPing': 'onSSEPing',
+	},
+
+	SSEConnect: function() {
+	
+		console.log("establishing a connections");
+
+		var EventID = this.Site.EventID || 0;
+
+		var SSE = new EventSource('/Jaxson/events/?EventID='+EventID+'&SiteToken='+ this.Site.User.SiteToken);
+
+		SSE.addEventListener('ServerEvent', function(e){
+			if(e.lastEventId != 0) {
+				this.set('Site.EventID', e.lastEventId);
+			}
+			this.fire(e.data);
+		}.bind(this));
+
+	},
+
+	onSSEConnectionEstablished: function() {
+
+		console.log("Connection Established!");
+	},
+	
+	onSSEPing: function() {
+	
+		console.log("SSE Ping");
+	},
+	
+
+
+
+};
+</script>

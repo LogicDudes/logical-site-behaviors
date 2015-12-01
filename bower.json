@@ -1,0 +1,33 @@
+{
+  "name": "logical-site-behaviors",
+  "homepage": "https://logicdudes.github.io/logical-site-behvaiors",
+  "authors": [
+    "Kevin Ashcraft <kevin@kevashcraft.com>"
+  ],
+  "description": "Site behaviors handling routing, localstorage, lists, and user information",
+  "main": "logical-site-behvaiors.html",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "router",
+    "sse",
+    "ajax",
+    "user",
+    "authentication"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "event-source-polyfill": "~0.0.6",
+    "polymer": "Polymer/Polymer#~1.2.3"
+  }
+}

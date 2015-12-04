@@ -27,9 +27,12 @@ Polymer.LogicalSSEBehavior = {
 
 		SSE.addEventListener('ServerEvent', function(e){
 			if(e.lastEventId != 0) {
-				this.set('Site.EventID', e.lastEventId);
+				if(this.Site.EventID == undefined || e.lastEventId > this.Site.EventID) {
+					this.set('Site.EventID', e.lastEventId);
+				}
+				console.log("sse Event", e);
+				this.fire('sse-' + e.data);
 			}
-			this.fire(e.data);
 		}.bind(this));
 
 	},

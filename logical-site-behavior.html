@@ -50,6 +50,7 @@ Polymer.LogicalSiteBehavior = {
 	},
 	
 	SiteReady: function() {
+		console.log("SiteReady");
 		this.isReady = true;
 		this.fire('site-ready');
 		this.Router();
@@ -62,7 +63,7 @@ Polymer.LogicalSiteBehavior = {
 			User: {
 				roles: ' ',
 			},
-			Token: '',
+			Token: this.SiteToken,
 			isAuthed: false,
 			Pool: {},
 		};
@@ -80,8 +81,12 @@ Polymer.LogicalSiteBehavior = {
 
 	SiteTokenChanged: function(n, o) {
 	
-		console.log("n", n);
-		console.log("o", o);
+		if(!this.SiteToken) {
+			this.SiteToken = n;
+		} else if (this.SiteToken != n) {
+			this.SiteToken = n;
+			this.SiteReset();
+		}
 
 	},
 	

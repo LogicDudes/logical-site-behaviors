@@ -75,7 +75,7 @@ Polymer.LogicalRouterBehavior = {
 
 		if(action == 'pop') {
 			LogicalApp.location = o.location;
-			var elem = LogicalApp.ce = document.createElement(o.element);
+			var elem = LogicalApp.CurrentElement = document.createElement(o.element);
 		}
 
 		if(action == 'push')

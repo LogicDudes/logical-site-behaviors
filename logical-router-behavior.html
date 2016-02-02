@@ -63,6 +63,7 @@ Polymer.LogicalRouterBehavior = {
 		// join the location 
 		url = '/' + LogicalApp.location.join('/');
 
+
 		this.stately({
 			element: elementName,
 			title: element.info.title,
@@ -91,7 +92,6 @@ Polymer.LogicalRouterBehavior = {
 			oc.animateOut();
 		}
 
-		console.log("elem", elem);
 
 		content.appendChild(elem);
 		elem.animateIn();
@@ -130,6 +130,7 @@ Polymer.LogicalRouterBehavior = {
 		// Define first level page
 		var page = this.pages[location[0]] || '';
 
+
 		// Find the page 
 		for(var i = 1; i < location.length; i++) {
 			if(typeof page != 'string' && typeof page[location[i]] != 'undefined')
@@ -142,7 +143,7 @@ Polymer.LogicalRouterBehavior = {
 		if(typeof page != 'string') page = '';
 
 		// Default is home
-		if(page == '') page = LogicalApp.DefaultPage;
+		if(page == '') page = this._page(LogicalApp.DefaultUnAuthedLocation);
 
 		return page;
 	},

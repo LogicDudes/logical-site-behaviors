@@ -49,8 +49,15 @@ Polymer.LogicalSiteBehavior = {
 		}
 	},
 	
+	SitePing: function() {
+	
+		this.jaxson('Site/SitePing');
+	},
+	
+
 	SiteReady: function() {
 		this.isReady = true;
+		this.SitePing();
 		this.fire('site-ready');
 		this.Router();
 	},

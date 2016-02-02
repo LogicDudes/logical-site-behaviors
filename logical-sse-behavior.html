@@ -18,20 +18,23 @@ Polymer.LogicalSSEBehavior = {
 	},
 
 	SSEConnect: function() {
-	
-		console.log("establishing a connections");
 
+		if(!this.SSEEnabled) return;
+		
 		var EventID = this.Site.EventID || 0;
 
 		var SSE = new EventSource('/Jaxson/events/?EventID='+EventID+'&SiteToken='+ this.Site.User.SiteToken);
 
 		SSE.addEventListener('ServerEvent', function(e){
 			if(e.lastEventId != 0) {
-				if(this.Site.EventID == undefined || e.lastEventId > this.Site.EventID) {
+				if(this.Site.EventID == undefined || Number(e.lastEventId) > Number(this.Site.EventID) ) {
 					this.set('Site.EventID', e.lastEventId);
 				}
-				console.log("sse Event", e);
-				this.fire('sse-' + e.data);
+				var d = JSON.parse(e.data);
+				this.fire('sse-' + d.EventType, d.EventData);
+				if(LogicalApp.CurrentElement) {
+					LogicalApp.CurrentElement.fire('sse-' + d.EventType, d.EventData);
+				}
 			}
 		}.bind(this));
 

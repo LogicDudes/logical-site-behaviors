@@ -1,10 +1,10 @@
 <script>
 /*
 	Logical Router Behavior
-	Created by: Kevin Ashcraft (kevin@kevashcraft.com)
+	Handles site routing using history api (pushing/popping)
+	Created by: Kevin Ashcraft (@kevashcraft)
 	Created on: 2015-12-22
-	Description: handles site routing using history api (pushing/popping)
-	Last Edited: 2015-12-22
+	Last Edited: 2016-04-15
 
 
 	Notes:
@@ -19,147 +19,122 @@ router based on the history api
 */
 Polymer.LogicalRouterBehavior = {
 
-	// main entry point - loads first page
 	Router: function() {
 
-		// call page changing function without specific location so current url is used
-		this.setPage(false, 1);
-		// create the pop event listener
-		this.statelyListen();
+		// parse url into location array
+		var location = window.location.pathname.substr(1).replace(/\/$/,'').toLowerCase().split('/');
+		this.PageSet(location, 1);
+		this.PopStateListener();
 	},
 
 
-	// prepares page information object to pass to stately
-	setPage: function(location, replace) {
+	PageSet: function(location, replace) {
 
-		// check if already on requested location
-		if(location && LogicalApp.Page) {
-			// check ever level of location
-			if(location.every(function(level, i){ return level == LogicalApp.Page[i] })) {
-				// gtfo
+		if(location && LogicalApp.PageLocation) {
+			if(location.every(function(page, i){ return page == LogicalApp.PageLocation[i] })) {
 				return;
 			}
 		}
 
-		// determine method to go to new page, push adds to the history stack, replace changes the current history info
-		var action = replace ? 'replace' : 'push';
 
-		// clear header
-		this.header = '';
+		var action = replace ? 'replace' : 'push',
+				elementName = this.ElementNameFromLocation(location),
+				element = LogicalApp.Element = document.createElement(elementName);
 
-		// get the name of the element for the page
-		var elementName = this._page(location);
+		pageURL = '/' + LogicalApp.PageLocation.join('/');
 
-		// create the element
-		var element = LogicalApp.CurrentElement = document.createElement(elementName);
-
-		if(element.info && element.info.RequiresAuth) {
-			if(!LogicalApp.Site.isAuthed) {
-				elementName = this._page(LogicalApp.DefaultUnAuthedLocation);
-				element = LogicalApp.CurrentElement = document.createElement(elementName);
-			}
-		}
-
-		// join the location 
-		url = '/' + LogicalApp.location.join('/');
-
-
-		this.stately({
-			element: elementName,
-			title: element.info.title,
-			url: url,
-			location: LogicalApp.location,
+		this.PageController({
+			ElementName: elementName,
+			PageTitle: element.info.title,
+			PageURL: pageURL,
+			PageLocation: LogicalApp.PageLocation,
 		}, action, element);
 
 	},
-	stately: function(o, action, elem) {
+
+
+	PageController: function(o, action, element) {
 
 		if(action == 'pop') {
 			LogicalApp.location = o.location;
-			var elem = LogicalApp.CurrentElement = document.createElement(o.element);
+			var element = LogicalApp.CurrentElement = document.createElement(o.element);
 		}
 
 		if(action == 'push')
-			window.history.pushState(o, o.title, o.url);
+			window.history.pushState(o, o.PageTitle, o.PageURL);
 		else if(action == 'replace')
-			window.history.replaceState(o, o.title, o.url);
+			window.history.replaceState(o, o.PageTitle, o.PageURL);
 
-		document.title = o.title + " | " + LogicalApp.SiteTitle;
-		this.header = o.title;
+		document.title = o.PageTitle + " | " + LogicalApp.SiteTitle;
+		this.header = o.PageTitle;
 
-		var content = this.Site.isAuthed ? this.$.content : this.$.contentUnAuthed ? this.$.contentUnAuthed : this.$.content;
-		if(oc = content.children[0]) {
-			oc.animateOut();
+
+		// Remove old page, add new page
+		var MainViewer = this.$.MainViewer,
+				PreviousPage;
+
+		if(PreviousPage = MainViewer.children[0]) {
+			if(typeof PreviousPage.animateOut == 'function') {
+				PreviousPage.animateOut();
+			} else {
+				MainViewer.removeChild(PreviousPage);
+			}
 		}
 
-
-		content.appendChild(elem);
-		elem.animateIn();
-
-		// remove conpan children
-		var ConpanContainer = LogicalApp.$.ConpanContainer;
-		while(ConpanContainer.firstChild) {
-			ConpanContainer.removeChild(ConpanContainer.firstChild);
+		MainViewer.appendChild(element);
+		if(typeof element.animateOut == 'function') {
+			element.animateIn();
 		}
 
-		// if ConPan, add it
-		var Conpan = elem.$.Conpan;
-		if(typeof Conpan != 'undefined') {
-			ConpanContainer.appendChild(Conpan);
-			LogicalApp.set('isConpan', true);
-			LogicalApp.set('isConpanShowing', true);
-		} else {
-			LogicalApp.set('isConpan', false);
+		// Remove previous Control Panel Content
+		var ControlPanel = LogicalApp.$.ControlPanel;
+		while(ControlPanel.firstChild) {
+			ControlPanel.removeChild(ControlPanel.firstChild);
+		}
+
+		// Set Control Panel Content
+		var ControlPanelContent;
+		if(ControlPanelContent = element.$.ControlPanelContent) {
+			ControlPanel.appendChild(ControlPanelContent);
 		}
 
 
 
 	},
-	statelyListen: function() {
+	PopStateListener: function() {
 		window.addEventListener('popstate', function(e){
-			this.stately(e.state, 'pop');
+			this.PageController(e.state, 'pop');
 		}.bind(this));
 	},
 
-	// returns the element name for the given location
-	_page: function(location) {
+	ElementNameFromLocation: function(location) {
 
-		// pass the location
-		var location = this._location(location);
-
-		// Define first level page
-		var page = this.pages[location[0]] || '';
-
-
-		// Find the page 
-		for(var i = 1; i < location.length; i++) {
-			if(typeof page != 'string' && typeof page[location[i]] != 'undefined')
-				page = page[location[i]];
-			else
-				break;
+		if(location == undefined || location[0] == '') {
+			location = [LogicalApp.PageDefault];
 		}
 
-		// set the page if it's a string
-		if(typeof page != 'string') page = '';
 
-		// Default is home
-		if(page == '') page = this._page(LogicalApp.DefaultUnAuthedLocation);
+		var page = LogicalApp.Pages[location[0]],
+				pageLocation = [location[0]];
+
+		for (var i = 1; i < 15; i++) {
+			if(typeof page == 'string') {
+				break;
+			} else if (page[location[i]] == undefined) {
+				page = page.default;
+			}	else {
+				page = page[location[i]];
+				pageLocation.push(location[i]);
+			}
+		}
+
+
+		LogicalApp.PageLocation = pageLocation;
 
 		return page;
+
 	},
 
-	// sets the global location array and returns it
-	_location: function(location) {
 
-		// Grab the location - removes first (and last) slash, lowercase it, then convert to array
-		if(!location)
-			var location = window.location.pathname.substr(1).replace(/\/$/,'').toLowerCase().split('/');
-
-		// Set the stored location
-		LogicalApp.location = location;
-		LogicalApp.Page0 = location[0];
-
-		return location;
-	},
 }
 </script>

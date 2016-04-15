@@ -15,7 +15,8 @@ Polymer.LogicalSiteBehavior = {
 		// holds the user information such as username, id, etc., and an isAuthed boolean to easily toggle hidden elements
 		Site: {
 			type: Object,
-			notify: true
+			notify: true,
+			value: function() { return {} }
 		},
 	},
 
@@ -25,20 +26,28 @@ Polymer.LogicalSiteBehavior = {
 
 	ready: function() {
 	
+		window.LogicalApp = this;
+
+	
 		this.StorageUnits = this.querySelectorAll('iron-localstorage');
 		this.StorageUnitsReady = 0;
 
-		// add event listener to localstorage units for lists
-		for( var i in this.StorageUnits) {
-			if(!this.StorageUnits.hasOwnProperty(i)) break;
-			this.StorageUnits[i].addEventListener('iron-localstorage-load', this.StorageUnitReady.bind(this));
+		if(this.StorageUnits.length > 0) {
+			// add event listener to localstorage units for lists
+			for( var i in this.StorageUnits) {
+				if(!this.StorageUnits.hasOwnProperty(i)) break;
+				this.StorageUnits[i].addEventListener('iron-localstorage-load', this.StorageUnitReady.bind(this));
 
-			if(this.StorageUnits[i].name == 'Site') {
-				this.StorageUnits[i].addEventListener('iron-localstorage-load-empty', this.SiteReset.bind(this));
-			} else {
-				this.StorageUnits[i].addEventListener('iron-localstorage-load-empty', this.StorageUnitReady.bind(this));
+				if(this.StorageUnits[i].name == 'Site') {
+					this.StorageUnits[i].addEventListener('iron-localstorage-load-empty', this.SiteReset.bind(this));
+				} else {
+					this.StorageUnits[i].addEventListener('iron-localstorage-load-empty', this.StorageUnitReady.bind(this));
+				}
 			}
+		} else {
+			this.SiteReady();
 		}
+
 	},
 	
 	// fired when unit is ready, when all ready fires SiteReady
@@ -56,8 +65,7 @@ Polymer.LogicalSiteBehavior = {
 	
 
 	SiteReady: function() {
-		this.isReady = true;
-		this.SitePing();
+		this.SiteIsReady = true;
 		this.fire('site-ready');
 		this.Router();
 	},

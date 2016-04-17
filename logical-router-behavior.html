@@ -41,6 +41,16 @@ Polymer.LogicalRouterBehavior = {
 				elementName = this.ElementNameFromLocation(location),
 				element = LogicalApp.Element = document.createElement(elementName);
 
+
+		if(element.info.urlinfo) {
+			if(location.length > LogicalApp.PageLocation.length) {
+				location.splice(0, LogicalApp.PageLocation.length);
+				for (var i = 0; i < element.info.urlinfo; i++) {
+					LogicalApp.PageLocation.push(location[i]);
+				}
+			}
+		}
+
 		pageURL = '/' + LogicalApp.PageLocation.join('/');
 
 		this.PageController({
@@ -57,7 +67,7 @@ Polymer.LogicalRouterBehavior = {
 
 		if(action == 'pop') {
 			LogicalApp.location = o.location;
-			var element = LogicalApp.CurrentElement = document.createElement(o.element);
+			var element = LogicalApp.CurrentElement = document.createElement(o.ElementName);
 		}
 
 		if(action == 'push')
@@ -69,11 +79,13 @@ Polymer.LogicalRouterBehavior = {
 		this.header = o.PageTitle;
 
 
+
 		// Remove old page, add new page
 		var MainViewer = this.$.MainViewer,
 				PreviousPage;
 
-		if(PreviousPage = MainViewer.children[0]) {
+		for (var i = 0; i < MainViewer.children.length; i++) {
+			var PreviousPage = MainViewer.children[i];
 			if(typeof PreviousPage.animateOut == 'function') {
 				PreviousPage.animateOut();
 			} else {
@@ -87,15 +99,15 @@ Polymer.LogicalRouterBehavior = {
 		}
 
 		// Remove previous Control Panel Content
-		var ControlPanel = LogicalApp.$.ControlPanel;
-		while(ControlPanel.firstChild) {
-			ControlPanel.removeChild(ControlPanel.firstChild);
+		var ControlPanelContainer = LogicalApp.$.ControlPanelContainer;
+		while(ControlPanelContainer.firstChild) {
+			ControlPanelContainer.removeChild(ControlPanelContainer.firstChild);
 		}
 
 		// Set Control Panel Content
-		var ControlPanelContent;
-		if(ControlPanelContent = element.$.ControlPanelContent) {
-			ControlPanel.appendChild(ControlPanelContent);
+		var ControlPanel;
+		if(ControlPanel = element.$.ControlPanel) {
+			ControlPanelContainer.appendChild(ControlPanel);
 		}
 
 

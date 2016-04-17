@@ -28,7 +28,7 @@ Polymer.LogicalSiteBehavior = {
 	
 		window.LogicalApp = this;
 
-	
+
 		this.StorageUnits = this.querySelectorAll('iron-localstorage');
 		this.StorageUnitsReady = 0;
 
@@ -56,11 +56,6 @@ Polymer.LogicalSiteBehavior = {
 		if(this.StorageUnitsReady == this.StorageUnits.length) {
 			this.SiteReady();
 		}
-	},
-	
-	SitePing: function() {
-	
-		this.jaxson('Site/SitePing');
 	},
 	
 

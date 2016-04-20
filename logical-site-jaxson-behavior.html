@@ -1,8 +1,13 @@
+<!-- 
+Logical Site Jaxson Behavior
+	Description: Hanles AJAX Requests
+	Created by: Kevin Ashcraft
+	Created on: 2015-12-22
+	Last Modified: 2016-04-20
+	Repo: https://github.com/LogicDudes/logical-site-behaviors
+-->
 <script>
-/*
-handles ajax requests
-*/
-Polymer.LogicalJaxsonBehavior = {
+Polymer.LogicalSiteJaxsonBehavior = {
 
 	jaxson: function(request, body, that) {
 
@@ -35,9 +40,15 @@ Polymer.LogicalJaxsonBehavior = {
 						this.that = this;
 						undo = true;
 					}
-					this.toast(response.toast, duration, undo);
+					this.Toast(response.toast, duration, undo);
 				}
-				that._jaxson(response);
+				if(that && typeof that._jaxson == 'function') {
+					that._jaxson(response);
+				} else {
+					console.log("response", response);
+					console.log("body", body);
+					console.log("that", that);
+				}
 			}
 
 		}.bind(this));
@@ -45,7 +56,7 @@ Polymer.LogicalJaxsonBehavior = {
 			method: 'POST',
 			body: body,
 			handleAs: 'json',
-			url: '/Jaxson',
+			url: '/Jaxson/',
 			headers: { 'Content-Type': 'application/json', 'Site-Token': this.Site.Token },
 		});
 	},

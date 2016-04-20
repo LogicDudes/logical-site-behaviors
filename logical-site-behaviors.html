@@ -1,14 +1,20 @@
-<link rel="import" href="logical-site-behavior.html">
-<link rel="import" href="logical-router-behavior.html">
-<link rel="import" href="logical-jaxson-behavior.html">
-<link rel="import" href="logical-sse-behavior.html">
-<script>
-/*
-	Logical Site Behaviors
-	Created by: Kevin Ashcraft (kevin@kevashcraft.com)
+<!-- 
+Logical Site Behaviors
+	Description: Site controller functions for a LogicalApp
+	Created by: Kevin Ashcraft
 	Created on: 2015-12-22
-	Description: Loads all of the site behaviors ( Site, Router, Jaxson, SSE )
-	Last Edited: 2015-12-22
-*/
-	Polymer.LogicalSiteBehaviors = [ Polymer.LogicalSiteBehavior, Polymer.LogicalRouterBehavior, Polymer.LogicalJaxsonBehavior, Polymer.LogicalSSEBehavior ];
+	Last Modified: 2016-04-20
+	Repo: https://github.com/LogicDudes/logical-site-behaviors
+-->
+<link rel="import" href="logical-site-base-behavior.html">
+<link rel="import" href="logical-site-router-behavior.html">
+<link rel="import" href="logical-site-jaxson-behavior.html">
+<link rel="import" href="logical-site-sse-behavior.html">
+<script>
+	Polymer.LogicalSiteBehaviors = [
+		Polymer.LogicalSiteBaseBehavior,
+		Polymer.LogicalSiteRouterBehavior,
+		Polymer.LogicalSiteJaxsonBehavior,
+		Polymer.LogicalSiteSSEBehavior,
+	];
 </script>

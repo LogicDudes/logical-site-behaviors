@@ -1,24 +1,23 @@
-<script>
-/*
-	Logical Router Behavior
-	Handles site routing using history api (pushing/popping)
-	Created by: Kevin Ashcraft (@kevashcraft)
+<!-- 
+Logical Site Router Behavior
+	Description: Routes the LogicalApp, using the History API
+	Created by: Kevin Ashcraft
 	Created on: 2015-12-22
-	Last Edited: 2016-04-15
+	Last Modified: 2016-04-20
+	Repo: https://github.com/LogicDudes/logical-site-behaviors
+-->
+<script>
+Polymer.LogicalSiteRouterBehavior = {
+
+	properties: {
+		PageURL: {
+			type: String,
+			observer: 'PageURLOnChange',
+		},
+	},
 
 
-	Notes:
-		The name of the loaded element is determined by parsing the address in the url par into a location array then looking up the element name in the pages object (located in the app-main.html file).
-*/
-/*
-router based on the history api
-
-	notes:
-		-pages are defined in the pages object in the main object
-		-location refers to an array of page names, url is the string found in the address bar
-*/
-Polymer.LogicalRouterBehavior = {
-
+	// Starts the router
 	Router: function() {
 
 		// parse url into location array
@@ -39,7 +38,13 @@ Polymer.LogicalRouterBehavior = {
 
 		var action = replace ? 'replace' : 'push',
 				elementName = this.ElementNameFromLocation(location),
-				element = LogicalApp.Element = document.createElement(elementName);
+				element = LogicalApp.CurrentElement = document.createElement(elementName);
+
+
+		if(element.info.RequiresAuth && !LogicalApp.Site.isAuthed) {
+			elementName = this.ElementNameFromLocation([LogicalApp.PageDefault]);
+			element = LogicalApp.CurrentElement = document.createElement(elementName);
+		}
 
 
 		if(element.info.urlinfo) {
@@ -51,7 +56,7 @@ Polymer.LogicalRouterBehavior = {
 			}
 		}
 
-		pageURL = '/' + LogicalApp.PageLocation.join('/');
+		LogicalApp.PageURL = pageURL = '/' + LogicalApp.PageLocation.join('/');
 
 		this.PageController({
 			ElementName: elementName,
@@ -63,6 +68,18 @@ Polymer.LogicalRouterBehavior = {
 	},
 
 
+	// Reacts to LogicalApp.PageURL changing
+	PageURLOnChange: function(PageURLNew, PageURLOld) {
+	
+		if(PageURLOld && PageURLNew != PageURLOld) {
+			var location = this.PageURL.split('/');
+			location.shift();
+			this.PageSet(location);
+		}
+	},
+	
+
+	// Adds and Removes pages
 	PageController: function(o, action, element) {
 
 		if(action == 'pop') {
@@ -81,7 +98,7 @@ Polymer.LogicalRouterBehavior = {
 
 
 		// Remove old page, add new page
-		var MainViewer = this.$.MainViewer,
+		var MainViewer = this.Site && this.Site.isAuthed ? this.$.MainViewerAuthed : this.$.MainViewer,
 				PreviousPage;
 
 		for (var i = 0; i < MainViewer.children.length; i++) {
@@ -99,7 +116,7 @@ Polymer.LogicalRouterBehavior = {
 		}
 
 		// Remove previous Control Panel Content
-		var ControlPanelContainer = LogicalApp.$.ControlPanelContainer;
+		var ControlPanelContainer = this.$.ControlPanelContainer;
 		while(ControlPanelContainer.firstChild) {
 			ControlPanelContainer.removeChild(ControlPanelContainer.firstChild);
 		}
@@ -109,33 +126,35 @@ Polymer.LogicalRouterBehavior = {
 		if(ControlPanel = element.$.ControlPanel) {
 			ControlPanelContainer.appendChild(ControlPanel);
 		}
-
-
-
 	},
+
+
+	// Creates Event Listener for popstate
 	PopStateListener: function() {
 		window.addEventListener('popstate', function(e){
 			this.PageController(e.state, 'pop');
 		}.bind(this));
 	},
 
+
+	// Parses LogicalApp.Pages for the correct page for a location
 	ElementNameFromLocation: function(location) {
 
-		if(location == undefined || location[0] == '') {
+		if(location == undefined || location[0] == '' || LogicalApp.Pages[location[0]] == undefined) {
 			location = [LogicalApp.PageDefault];
 		}
 
 
-		var page = LogicalApp.Pages[location[0]],
+		var page = LogicalApp.Pages[location[0].toLowerCase()],
 				pageLocation = [location[0]];
 
 		for (var i = 1; i < 15; i++) {
 			if(typeof page == 'string') {
 				break;
-			} else if (page[location[i]] == undefined) {
+			} else if (page[location[i].toLowerCase()] == undefined) {
 				page = page.default;
 			}	else {
-				page = page[location[i]];
+				page = page[location[i].toLowerCase()];
 				pageLocation.push(location[i]);
 			}
 		}

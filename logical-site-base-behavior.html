@@ -1,14 +1,13 @@
-<script>
-/*
-	Logical Site Behavior
-	Created by: Kevin Ashcraft (kevin@kevashcraft.com)
+<!-- 
+Logical Site Base Behavior
+	Description: Creates and maintains Site object
+	Created by: Kevin Ashcraft
 	Created on: 2015-12-22
-	Description: defines and stores the Site object
-	Last Edited: 2015-12-22
-
-*/
-
-Polymer.LogicalSiteBehavior = {
+	Last Modified: 2016-04-20
+	Repo: https://github.com/LogicDudes/logical-site-behaviors
+-->
+<script>
+Polymer.LogicalSiteBaseBehavior = {
 
 	properties: {
 
@@ -81,8 +80,8 @@ Polymer.LogicalSiteBehavior = {
 			this.StorageUnitReady();
 		} else {
 			// if reset occurred after site ready, then make sure page does not requre authentication
-			if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth && LogicalApp.DefaultUnAuthedLocation) {
-				LogicalApp.setPage([LogicalApp.DefaultUnAuthedLocation]);
+			if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth) {
+				LogicalApp.PageSet([LogicalApp.PageDefault]);
 			}
 		}
 
@@ -97,6 +96,13 @@ Polymer.LogicalSiteBehavior = {
 			this.SiteReset();
 		}
 
+	},
+
+	Toast: function(message, duration, undo) {
+		var Toast = this.$.Toast;
+		Toast.duration = duration || 3500;
+		Toast.text = message;
+		Toast.show();
 	},
 	
 };

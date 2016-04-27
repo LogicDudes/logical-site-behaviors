@@ -20,8 +20,19 @@ Polymer.LogicalSiteRouterBehavior = {
 	// Starts the router
 	Router: function() {
 
+		// get and store query string
+		var query = window.location.search.substring(1),
+				vars = query.split('&');
+		this.QueryVariables = {};
+		for (var i = 0; i < vars.length; i++) {
+			var pair = vars[i].split('=');
+			this.QueryVariables[pair[0]] = pair[1];
+		}
+		this.fire('QueryVariablesSet');
+
+
 		// parse url into location array
-		var location = window.location.pathname.substr(1).replace(/\/$/,'').toLowerCase().split('/');
+		var location = window.location.pathname.substr(1).replace(/\/$/,'').split('/');
 		this.PageSet(location, 1);
 		this.PopStateListener();
 	},
@@ -68,6 +79,7 @@ Polymer.LogicalSiteRouterBehavior = {
 	},
 
 
+
 	// Reacts to LogicalApp.PageURL changing
 	PageURLOnChange: function(PageURLNew, PageURLOld) {
 	
@@ -92,13 +104,15 @@ Polymer.LogicalSiteRouterBehavior = {
 		else if(action == 'replace')
 			window.history.replaceState(o, o.PageTitle, o.PageURL);
 
+		LogicalApp.PageTitle = o.PageTitle;
+		
 		document.title = o.PageTitle + " | " + LogicalApp.SiteTitle;
 		this.header = o.PageTitle;
 
 
 
 		// Remove old page, add new page
-		var MainViewer = this.Site && this.Site.isAuthed ? this.$.MainViewerAuthed : this.$.MainViewer,
+		var MainViewer = this.Site && this.Site.isAuthed && this.$.MainViewerAuthed ?	this.$.MainViewerAuthed : this.$.MainViewer,
 				PreviousPage;
 
 		for (var i = 0; i < MainViewer.children.length; i++) {

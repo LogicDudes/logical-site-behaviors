@@ -21,6 +21,7 @@ Polymer.LogicalSiteBaseBehavior = {
 
 	observers: [
 		'SiteTokenChanged(Site.Token)',
+		'SiteOnChange(Site.*)',
 	],
 
 	ready: function() {
@@ -49,6 +50,14 @@ Polymer.LogicalSiteBaseBehavior = {
 
 	},
 	
+	SiteOnChange: function() {
+	
+		if(this.CurrentElement) {
+			this.CurrentElement.fire('ld-site-changed');
+		}
+	},
+	
+
 	// fired when unit is ready, when all ready fires SiteReady
 	StorageUnitReady: function() {
 		this.StorageUnitsReady++;
@@ -100,7 +109,7 @@ Polymer.LogicalSiteBaseBehavior = {
 
 	Toast: function(message, duration, undo) {
 		var Toast = this.$.Toast;
-		Toast.duration = duration || 3500;
+		Toast.duration = duration || 7500;
 		Toast.text = message;
 		Toast.show();
 	},

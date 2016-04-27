@@ -23,7 +23,7 @@ Polymer.LogicalSiteSSEBehavior = {
 		
 		var EventID = this.Site.EventID || 0;
 
-		var SSE = new EventSource('/Jaxson/events/?EventID='+EventID+'&SiteToken='+ this.Site.User.SiteToken);
+		var SSE = new EventSource('/Jaxson/Events/listener/?EventID='+EventID+'&SiteToken='+ this.Site.User.SiteToken);
 
 		SSE.addEventListener('ServerEvent', function(e){
 			if(e.lastEventId != 0) {

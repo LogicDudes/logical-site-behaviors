@@ -19,11 +19,11 @@ Polymer.LogicalSiteSSEBehavior = {
 	// Establishes an Event Stream
 	SSEConnect: function() {
 
-		if(!this.SSEEnabled) return;
+		if(!this.SSEEnabled || !this.Site.Authenticated) return;
 		
 		var EventID = this.Site.EventID || 0;
 
-		var SSE = new EventSource('/Jaxson/Events/listener/?EventID='+EventID+'&SiteToken='+ this.Site.User.SiteToken);
+		var SSE = new EventSource('/Charles/Events/EventListener/' + this.Site.Token + '/?EventID='+EventID);
 
 		SSE.addEventListener('ServerEvent', function(e){
 			if(e.lastEventId != 0) {

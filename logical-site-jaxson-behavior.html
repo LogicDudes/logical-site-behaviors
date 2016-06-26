@@ -26,21 +26,13 @@ Polymer.LogicalSiteJaxsonBehavior = {
 
 			var response = responses.shift();
 			this.set('Site.Token', response.SiteToken);
+			this.set('Site.Authenticated', response.Authenticated);
 
 			for(var i in responses) {
 				var response = responses[i];
 				
 				if(response.toast) {
-					var duration = response.toastDuration || 2000;
-					var undo = false;
-					if(response.undoUrl) {
-						duration = response.toastDuration || 9000;
-						this.undoParams = response.undoParams;
-						this.undoUrl = response.undoUrl;
-						this.that = this;
-						undo = true;
-					}
-					this.Toast(response.toast, duration, undo);
+					this.Toast(response.toast);
 				}
 				if(that && typeof that._jaxson == 'function') {
 					that._jaxson(response);
@@ -56,7 +48,7 @@ Polymer.LogicalSiteJaxsonBehavior = {
 			method: 'POST',
 			body: body,
 			handleAs: 'json',
-			url: '/Jaxson/',
+			url: '/Charles/',
 			headers: { 'Content-Type': 'application/json', 'Site-Token': this.Site.Token },
 		});
 	},

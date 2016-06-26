@@ -52,10 +52,12 @@ Polymer.LogicalSiteRouterBehavior = {
 				element = LogicalApp.CurrentElement = document.createElement(elementName);
 
 
-		if(element.info.RequiresAuth && !LogicalApp.Site.isAuthed) {
+		if(element.info.RequiresAuth && !LogicalApp.Site.Authenticated) {
 			elementName = this.ElementNameFromLocation([LogicalApp.PageDefault]);
 			element = LogicalApp.CurrentElement = document.createElement(elementName);
 		}
+
+		LogicalApp.set('PagePreviousPage', element.info.PagePreviousPage || false);
 
 
 		if(element.info.urlinfo) {
@@ -78,6 +80,16 @@ Polymer.LogicalSiteRouterBehavior = {
 
 	},
 
+
+	PageSetEvent: function(event) {
+	
+		var location = this._data('page', event).split('/') || false;
+		console.log("location", location);
+		if(location) {
+			this.PageSet(location);
+		}
+	},
+	
 
 
 	// Reacts to LogicalApp.PageURL changing
@@ -104,15 +116,18 @@ Polymer.LogicalSiteRouterBehavior = {
 		else if(action == 'replace')
 			window.history.replaceState(o, o.PageTitle, o.PageURL);
 
+
+		LogicalApp.CurrentElement.set('Site', LogicalApp.Site);
 		LogicalApp.PageTitle = o.PageTitle;
 		
 		document.title = o.PageTitle + " | " + LogicalApp.SiteTitle;
 		this.header = o.PageTitle;
 
+		LogicalApp.$.DrawerPanel.closeDrawer();
 
 
 		// Remove old page, add new page
-		var MainViewer = this.Site && this.Site.isAuthed && this.$.MainViewerAuthed ?	this.$.MainViewerAuthed : this.$.MainViewer,
+		var MainViewer = this.Site && this.Site.Authenticated && this.$.MainViewerAuthed ?	this.$.MainViewerAuthed : this.$.MainViewer,
 				PreviousPage;
 
 		for (var i = 0; i < MainViewer.children.length; i++) {

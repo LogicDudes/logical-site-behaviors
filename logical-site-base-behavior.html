@@ -20,14 +20,14 @@ Polymer.LogicalSiteBaseBehavior = {
 	},
 
 	observers: [
-		'SiteTokenChanged(Site.Token)',
+		// 'SiteAuthenticatedChanged(Site.Authenticated)',
 		'SiteOnChange(Site.*)',
 	],
 
 	ready: function() {
 	
 		window.LogicalApp = this;
-
+		LogicalApp.IsReady = true;
 
 		this.StorageUnits = this.querySelectorAll('iron-localstorage');
 		this.StorageUnitsReady = 0;
@@ -53,7 +53,7 @@ Polymer.LogicalSiteBaseBehavior = {
 	SiteOnChange: function() {
 	
 		if(this.CurrentElement) {
-			this.CurrentElement.fire('ld-site-changed');
+			this.CurrentElement.Site = this.Site;
 		}
 	},
 	
@@ -65,11 +65,21 @@ Polymer.LogicalSiteBaseBehavior = {
 			this.SiteReady();
 		}
 	},
+
+
+	SitePing: function() {
+	
+		this.jaxson('Site/SitePing');
+	},
+	
 	
 
 	SiteReady: function() {
+		console.log("this.Site", this.Site);
+		console.log("this.Site.Authenticated", this.Site.Authenticated);
 		this.SiteIsReady = true;
 		this.fire('site-ready');
+		this.SitePing();
 		this.Router();
 	},
 	
@@ -77,34 +87,34 @@ Polymer.LogicalSiteBaseBehavior = {
 	SiteReset: function() {
 
 		this.Site = {
-			User: {
-				roles: ' ',
-			},
-			Token: this.SiteToken,
-			isAuthed: false,
+			User: {},
+			Token: null,
+			Authenticated: false,
 			Pool: {},
 		};
 
-		if(!this.isReady) {
-			this.StorageUnitReady();
-		} else {
 			// if reset occurred after site ready, then make sure page does not requre authentication
-			if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth) {
-				LogicalApp.PageSet([LogicalApp.PageDefault]);
+			if(this.isReady) {
+				if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth) {
+					LogicalApp.PageSet([LogicalApp.PageDefault]);
+				}
 			}
-		}
 
 	},
 
-	SiteTokenChanged: function(n, o) {
-	
-		if(!this.SiteToken) {
-			this.SiteToken = n;
-		} else if (this.SiteToken != n) {
-			this.SiteToken = n;
-			this.SiteReset();
-		}
+	SiteAuthenticatedChanged: function() {
 
+		if(!this.Site.Authenticated) {
+			this.set('Site.User', {});
+			this.set('Site.Pool', {});
+			this.set('Site.Token', null);
+			// if reset occurred after site ready, then make sure page does not requre authentication
+			if(this.isReady) {
+				if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth) {
+					LogicalApp.PageSet([LogicalApp.PageDefault]);
+				}
+			}
+		}
 	},
 
 	Toast: function(message, duration, undo) {

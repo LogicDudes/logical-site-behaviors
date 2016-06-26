@@ -28,6 +28,6 @@
   ],
   "dependencies": {
     "event-source-polyfill": "~0.0.6",
-    "polymer": "Polymer/Polymer#~1.2.3"
+    "polymer": "Polymer/Polymer#~1.5"
   }
 }

@@ -21,6 +21,8 @@ Polymer.LogicalSiteSSEBehavior = {
 
 		if(!this.SSEEnabled || !this.Site.Authenticated) return;
 		
+		console.log("Auth",this.Site.Authenticated);
+
 		var EventID = this.Site.EventID || 0;
 
 		var SSE = new EventSource('/Charles/Events/EventListener/' + this.Site.Token + '/?EventID='+EventID);

@@ -75,8 +75,6 @@ Polymer.LogicalSiteBaseBehavior = {
 	
 
 	SiteReady: function() {
-		console.log("this.Site", this.Site);
-		console.log("this.Site.Authenticated", this.Site.Authenticated);
 		this.SiteIsReady = true;
 		this.fire('site-ready');
 		this.SitePing();
@@ -94,10 +92,12 @@ Polymer.LogicalSiteBaseBehavior = {
 		};
 
 			// if reset occurred after site ready, then make sure page does not requre authentication
-			if(this.isReady) {
+			if(this.SiteIsReady) {
 				if(LogicalApp.CurrentElement && LogicalApp.CurrentElement.info.RequiresAuth) {
 					LogicalApp.PageSet([LogicalApp.PageDefault]);
 				}
+			} else {
+				this.StorageUnitReady();
 			}
 
 	},

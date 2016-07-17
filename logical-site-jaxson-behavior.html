@@ -21,7 +21,11 @@ Polymer.LogicalSiteJaxsonBehavior = {
 		var that = that || this;
 
 		var jaxson = document.createElement('iron-request');
+		jaxson.id = request;
 		jaxson.completes.then(function(r){
+			if(jaxson.aborted) {
+				return;
+			}
 			var responses = r.response;
 
 			var response = responses.shift();
@@ -42,8 +46,9 @@ Polymer.LogicalSiteJaxsonBehavior = {
 					console.log("that", that);
 				}
 			}
-
+			document.body.removeChild(jaxson);
 		}.bind(this));
+		document.body.appendChild(jaxson);
 		jaxson.send({
 			method: 'POST',
 			body: body,
